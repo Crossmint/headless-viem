@@ -1,113 +1,47 @@
-import Image from "next/image";
+"use client";
+
+import { createWalletClient, custom, walletActions } from "viem";
+import { sepolia } from "viem/chains";
 
 export default function Home() {
+  const client =
+    typeof window !== "undefined"
+      ? createWalletClient({
+          account: "0x6C3b3225759Cbda68F96378A9F0277B4374f9F06",
+          chain: sepolia,
+          transport: custom(window.ethereum!),
+        })
+      : null;
+
+  const sendSerializedTransaction = async () => {
+    // const serializedTransaction =
+    //   "0x02f9012683aa36a744848917370085080992ce6c82629c94a105c311fa72b8fb78c992ecbdb8b02ea5bd394d869a9d359ca000b8f465794a68624763694f694a49557a49314e694973496e523563434936496b705856434a392e65794a756232356a5a534936496a4d3559544e6d4d444d334c544d7a4e6d51744e4441305a5331684d6a45774c575268593249335957526b5a4456694e794973496d39795a4756795357526c626e52705a6d6c6c63694936496d4e6a4e44426c4e6d466d4c5759345a474d744e47466a4d6930345a5449324c5751354d57457a4d6d59794e7a466a5a694973496d6c68644349364d5463784e546b334f54557a4e33302e662d4949646c653375314c58634c7845765438754e336d74786370764a686f31384a5a4b76483768456659c0";
+
+    const request = await client?.prepareTransactionRequest({
+      to: "0xa105C311fA72b8Fb78c992EcbDb8b02Ea5bd394d",
+      data: "0x65794a68624763694f694a49557a49314e694973496e523563434936496b705856434a392e65794a756232356a5a534936496a4d3559544e6d4d444d334c544d7a4e6d51744e4441305a5331684d6a45774c575268593249335957526b5a4456694e794973496d39795a4756795357526c626e52705a6d6c6c63694936496d4e6a4e44426c4e6d466d4c5759345a474d744e47466a4d6930345a5449324c5751354d57457a4d6d59794e7a466a5a694973496d6c68644349364d5463784e546b334f54557a4e33302e662d4949646c653375314c58634c7845765438754e336d74786370764a686f31384a5a4b76483768456659",
+      gasLimit: "25244",
+      maxPriorityFeePerGas: BigInt(2300000000),
+      maxFeePerGas: BigInt(34520354412),
+      value: BigInt(170000000000000),
+      chainId: 11155111,
+      sig: null,
+      accessList: [],
+    });
+    // removed gasPrice and nonce
+
+    const serializedTransaction = await client.signTransaction(request);
+
+    const hash = await client.sendRawTransaction({
+      serializedTransaction,
+    });
+
+    console.log(hash);
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    <button onClick={() => sendSerializedTransaction()}>
+      Send Serialized transaction
+    </button>
   );
 }
