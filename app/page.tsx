@@ -1,47 +1,124 @@
 "use client";
 
-import { createWalletClient, custom, walletActions } from "viem";
+import { useEffect, useState } from "react";
+import {
+  createPublicClient,
+  createWalletClient,
+  parseTransaction,
+  custom,
+  http,
+  type Address,
+  type Hash,
+  type TransactionReceipt,
+  stringify,
+} from "viem";
 import { sepolia } from "viem/chains";
 
+declare global {
+  interface Window {
+    ethereum: any;
+  }
+}
+
+const publicClient = createPublicClient({
+  chain: sepolia,
+  transport: http(),
+});
+
 export default function Home() {
-  const client =
-    typeof window !== "undefined"
-      ? createWalletClient({
-          account: "0x6C3b3225759Cbda68F96378A9F0277B4374f9F06",
-          chain: sepolia,
-          transport: custom(window.ethereum!),
-        })
-      : null;
+  const [hash, setHash] = useState<Hash>();
+  const [account, setAccount] = useState<Address | "">("");
+  const [receipt, setReceipt] = useState<TransactionReceipt>();
+  const [client, setClient] = useState<any>();
+  const [serializedTxn, setSerializedTxn] = useState<`0x${string}`>();
 
-  const sendSerializedTransaction = async () => {
-    // const serializedTransaction =
-    //   "0x02f9012683aa36a744848917370085080992ce6c82629c94a105c311fa72b8fb78c992ecbdb8b02ea5bd394d869a9d359ca000b8f465794a68624763694f694a49557a49314e694973496e523563434936496b705856434a392e65794a756232356a5a534936496a4d3559544e6d4d444d334c544d7a4e6d51744e4441305a5331684d6a45774c575268593249335957526b5a4456694e794973496d39795a4756795357526c626e52705a6d6c6c63694936496d4e6a4e44426c4e6d466d4c5759345a474d744e47466a4d6930345a5449324c5751354d57457a4d6d59794e7a466a5a694973496d6c68644349364d5463784e546b334f54557a4e33302e662d4949646c653375314c58634c7845765438754e336d74786370764a686f31384a5a4b76483768456659c0";
-
-    const request = await client?.prepareTransactionRequest({
-      to: "0xa105C311fA72b8Fb78c992EcbDb8b02Ea5bd394d",
-      data: "0x65794a68624763694f694a49557a49314e694973496e523563434936496b705856434a392e65794a756232356a5a534936496a4d3559544e6d4d444d334c544d7a4e6d51744e4441305a5331684d6a45774c575268593249335957526b5a4456694e794973496d39795a4756795357526c626e52705a6d6c6c63694936496d4e6a4e44426c4e6d466d4c5759345a474d744e47466a4d6930345a5449324c5751354d57457a4d6d59794e7a466a5a694973496d6c68644349364d5463784e546b334f54557a4e33302e662d4949646c653375314c58634c7845765438754e336d74786370764a686f31384a5a4b76483768456659",
-      gasLimit: "25244",
-      maxPriorityFeePerGas: BigInt(2300000000),
-      maxFeePerGas: BigInt(34520354412),
-      value: BigInt(170000000000000),
-      chainId: 11155111,
-      sig: null,
-      accessList: [],
+  useEffect(() => {
+    const client = createWalletClient({
+      chain: sepolia,
+      transport: custom(window.ethereum),
     });
-    // removed gasPrice and nonce
+    setClient(client);
+  }, []);
 
-    const serializedTransaction = await client.signTransaction(request);
+  useEffect(() => {
+    (async () => {
+      if (hash) {
+        const receipt = await publicClient.waitForTransactionReceipt({
+          hash,
+        });
+        setReceipt(receipt);
+      }
+    })();
+  }, [hash]);
 
-    const hash = await client.sendRawTransaction({
-      serializedTransaction,
+  const connectWallet = async () => {
+    const accounts = await client.requestAddresses();
+    setAccount(accounts[0]);
+  };
+
+  const signAndSendTransaction = async () => {
+    const txn = parseTransaction(serializedTxn || "0x");
+
+    const hash = await client?.sendTransaction({
+      account,
+      to: txn.to,
+      data: txn.data,
+      value: BigInt(txn.value || 0),
+      chainId: txn.chainId,
     });
 
-    console.log(hash);
+    setHash(hash);
   };
 
   return (
-    <button onClick={() => sendSerializedTransaction()}>
-      Send Serialized transaction
-    </button>
+    <div className="p-5">
+      <div className="flex justify-between gap-2 mb-2">
+        <input
+          value={account}
+          onChange={(e) => setAccount(e.target.value as `0x${string}`)}
+          placeholder="Enter Wallet Address or click Connect Wallet Button"
+          className="w-full px-3 py-2 font-mono text-sm text-gray-700 placeholder-gray-300 rounded focus:outline-none"
+        />
+        <button
+          onClick={() => connectWallet()}
+          disabled={!!account}
+          className={`bg-gradient-to-br from-[#01b15d] to-[#0296a8] hover:bg-gradient-to-br hover:from-[#00ff85] hover:to-[#00e1fc] hover:bg-none text-white font-bold py-2 px-4 rounded w-60 ${
+            account ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          Connect Wallet
+        </button>
+      </div>
+      <textarea
+        value={serializedTxn}
+        onChange={(e) => setSerializedTxn(e.target.value as `0x${string}`)}
+        placeholder="Enter serializedTransaction from API response"
+        className="w-full h-40 px-3 py-2 font-mono text-sm text-gray-700 placeholder-gray-300 rounded focus:outline-none"
+      />
+      <div className="flex justify-between gap-2 mb-2">
+        <button
+          onClick={() => signAndSendTransaction()}
+          disabled={!serializedTxn}
+          className={`bg-gradient-to-br from-[#01b15d] to-[#0296a8] hover:bg-gradient-to-br hover:from-[#00ff85] hover:to-[#00e1fc] hover:bg-none text-white font-bold py-2 px-4 rounded ${
+            !serializedTxn ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          Send Transaction
+        </button>
+        {hash && !receipt && (
+          <div className="pt-5">
+            Awaiting confirmation...<div className="ml-3 spinner"></div>
+          </div>
+        )}
+      </div>
+      {receipt && (
+        <div className="p-2 bg-gray-900 overflow-auto rounded">
+          Receipt:{" "}
+          <pre>
+            <code>{stringify(receipt, null, 2)}</code>
+          </pre>
+        </div>
+      )}
+    </div>
   );
 }

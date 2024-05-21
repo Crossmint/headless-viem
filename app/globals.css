@@ -31,3 +31,19 @@ body {
     text-wrap: balance;
   }
 }
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-radius: 50%;
+  border-top-color: #3498db;
+  animation: spinner 1s linear infinite;
+}
