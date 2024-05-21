@@ -82,7 +82,7 @@ export default function Home() {
         <button
           onClick={() => connectWallet()}
           disabled={!!account}
-          className={`bg-gradient-to-br from-[#01b15d] to-[#0296a8] hover:bg-gradient-to-br hover:from-[#00ff85] hover:to-[#00e1fc] hover:bg-none text-white font-bold py-2 px-4 rounded w-60 ${
+          className={`bg-gradient-to-br from-[#01b15d] to-[#0296a8] hover:bg-gradient-to-br hover:from-[#00ff85] hover:to-[#00e1fc] text-white font-bold py-2 px-4 rounded w-60 ${
             account ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
@@ -99,7 +99,7 @@ export default function Home() {
         <button
           onClick={() => signAndSendTransaction()}
           disabled={!serializedTxn}
-          className={`bg-gradient-to-br from-[#01b15d] to-[#0296a8] hover:bg-gradient-to-br hover:from-[#00ff85] hover:to-[#00e1fc] hover:bg-none text-white font-bold py-2 px-4 rounded ${
+          className={`bg-gradient-to-br from-[#01b15d] to-[#0296a8] hover:bg-gradient-to-br hover:from-[#00ff85] hover:to-[#00e1fc] text-white font-bold py-2 px-4 rounded ${
             !serializedTxn ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
